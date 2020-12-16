@@ -10,14 +10,6 @@ import actionlib
 import tf2_ros
 import tf2_msgs.msg
 
-from pkg_vb_sim.srv import conveyorBeltPowerMsg
-from pkg_vb_sim.srv import conveyorBeltPowerMsgRequest
-from pkg_vb_sim.srv import conveyorBeltPowerMsgResponse
-
-from pkg_vb_sim.srv import ConveyorBeltControl
-from pkg_vb_sim.srv import ConveyorBeltControlRequest
-from pkg_vb_sim.srv import ConveyorBeltControlResponse
-
 from pkg_vb_sim.msg import LogicalCameraImage
 from pkg_vb_sim.msg import Model
 from pkg_vb_sim.srv import vacuumGripper
@@ -45,7 +37,6 @@ class CartesianPath:
         self._planning_frame = self._group.get_planning_frame()
         self._eef_link = self._group.get_end_effector_link()
         self._group_names = self._robot.get_group_names()
-        self.pr=conveyorBeltPowerMsg()
         self.box=LogicalCameraImage()
         self.dif=Model()
         self.ur5_pose_1 = geometry_msgs.msg.Pose()
@@ -108,7 +99,6 @@ class CartesianPath:
             self.ur5_pose_1.orientation.w =trans.transform.rotation.w
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             rospy.logerr("TF error")
-            rospy.signal_shutdown("TF error")
 
     def ee_cartesian_translation(self, trans_x, trans_y, trans_z):
         # 1. Create a empty list to hold waypoints
@@ -153,19 +143,19 @@ class CartesianPath:
     def go_to_pose(self, arg_pose):
 
         pose_values = self._group.get_current_pose().pose
-        #rospy.loginfo('\033[94m' + ">>> Current Pose:" + '\033[0m')
-        #rospy.loginfo(pose_values)
+        rospy.loginfo('\033[94m' + ">>> Current Pose:" + '\033[0m')
+        rospy.loginfo(pose_values)
 
         self._group.set_pose_target(arg_pose)
         flag_plan = self._group.go(wait=True)  # wait=False for Async Move
 
         pose_values = self._group.get_current_pose().pose
-        #rospy.loginfo('\033[94m' + ">>> Final Pose:" + '\033[0m')
-        #rospy.loginfo(pose_values)
+        rospy.loginfo('\033[94m' + ">>> Final Pose:" + '\033[0m')
+        rospy.loginfo(pose_values)
 
         list_joint_values = self._group.get_current_joint_values()
-        #rospy.loginfo('\033[94m' + ">>> Final Joint Values:" + '\033[0m')
-        #rospy.loginfo(list_joint_values)
+        rospy.loginfo('\033[94m' + ">>> Final Joint Values:" + '\033[0m')
+        rospy.loginfo(list_joint_values)
 
         if (flag_plan == True):
             rospy.loginfo('\033[94m' + ">>> go_to_pose() Success" + '\033[0m')
@@ -174,6 +164,41 @@ class CartesianPath:
                 '\033[94m' + ">>> go_to_pose() Failed. Solution for Pose not Found." + '\033[0m')
 
         return flag_plan
+
+    def set_joint_angles(self, arg_list_joint_angles):
+
+        list_joint_values = self._group.get_current_joint_values()
+        rospy.loginfo('\033[94m' + ">>> Current Joint Values:" + '\033[0m')
+        rospy.loginfo(list_joint_values)
+
+        self._group.set_joint_value_target(arg_list_joint_angles)
+        self._group.plan()
+        flag_plan = self._group.go(wait=True)
+
+        list_joint_values = self._group.get_current_joint_values()
+        rospy.loginfo('\033[94m' + ">>> Final Joint Values:" + '\033[0m')
+        rospy.loginfo(list_joint_values)
+
+        pose_values = self._group.get_current_pose().pose
+        rospy.loginfo('\033[94m' + ">>> Final Pose:" + '\033[0m')
+        rospy.loginfo(pose_values)
+
+        if (flag_plan == True):
+            rospy.loginfo(
+                '\033[94m' + ">>> set_joint_angles() Success" + '\033[0m')
+        else:
+            rospy.logerr(
+                '\033[94m' + ">>> set_joint_angles() Failed." + '\033[0m')
+
+        return flag_plan
+
+    def joint_angle_transition(self,arg_joint_angles):
+        list1=self._group.get_current_joint_values()
+        list2=[]
+        zip_object= zip(list1,arg_joint_angles)
+        for list1_i,arg_joint_angles_i in zip_object:
+            list2.append(list1_i-arg_joint_angles_i)
+        self.set_joint_angles(list2)
 
     # Destructor
     def __del__(self):
@@ -217,6 +242,11 @@ def main():
     bin_pose[1].orientation.z=1.20678298204e-08
     bin_pose[1].orientation.w=4.76741946812e-05
 
+    joint_angle=[[],[],[]]
+    joint_angle[0]=[1.517,0,0,0,0,0]
+    joint_angle[1]=[3.142,0,0,0,0,0]
+    joint_angle[2]=[-1.517,0,0,0,0,0]
+
     while not rospy.is_shutdown():
         if(len(ur5.box.models)>0):
             length=len(ur5.box.models)
@@ -231,10 +261,10 @@ def main():
                             print(goal_pose)
                             ur5.ee_cartesian_translation(goal_pose.position.x,0,0)
                             ur5.handle_vg(True)
-                            ur5.ee_cartesian_translation((ur5.box_length+0.2),0,0)
+                            ur5.ee_cartesian_translation(0,0,(ur5.box_length+0.2))
                             key=ur5.box.models[n].type[-1]
                             int_key=ord(key)-ord('0')-1
-                            ur5.go_to_pose(bin_pose[int_key])
+                            ur5.joint_angle_transition(joint_angle[int_key])
                             ur5.handle_vg(False)
                             ur5.go_to_pose(ur5.home_pose)
                 except:

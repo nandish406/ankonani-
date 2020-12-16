@@ -108,7 +108,7 @@ def main():
     flag_1=False
     flag_2=True
     flag_3=True
-    r=rospy.Rate(100)
+    r=rospy.Rate(150)
 
     while not rospy.is_shutdown():
         if(len(ur5.box.models)>0):
