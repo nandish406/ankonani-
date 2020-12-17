@@ -1,4 +1,5 @@
-[33mcommit 474c5f46d4ec30cc734f5d79b304108dca153539[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+
+[33mcommit 474c5f46d4ec30cc734f5d79b304108dca153539[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
 Author: Aniruddha V S <vsaniruddha@gmail.com>
 Date:   Thu Dec 17 15:39:30 2020 +0530
 
