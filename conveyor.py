@@ -36,7 +36,7 @@ class Conveyor:
         self._group = moveit_commander.MoveGroupCommander(self._planning_group)
         self._display_trajectory_publisher = rospy.Publisher(
             '/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory, queue_size=1)
-        rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=150)
+        rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=100)
         self._exectute_trajectory_client = actionlib.SimpleActionClient(
             'execute_trajectory', moveit_msgs.msg.ExecuteTrajectoryAction)
         self._exectute_trajectory_client.wait_for_server()
@@ -113,20 +113,25 @@ def main():
     while not rospy.is_shutdown():
         if(len(ur5.box.models)>0):
             length=len(ur5.box.models)
+            flag_4=True
             for n in range (0,length):
                 try:
                     if(ur5.box.models[n].type[0]=='p'):
                         key=ur5.box.models[n].type[-1]
                         int_key=ord(key)-ord('0')-1
-                        if(abs(ur5.box.models[n].pose.position.y-0)<=1e-2):
-                            ur5.handle_conveyor(0)
-                            flag_2=False
-                            if(int_key==0):
-                                flag_1=True
-                        elif (int_key==0 and flag_2):
-                            ur5.handle_conveyor(40)
-                        else:
-                            ur5.handle_conveyor(15)
+
+                        while(flag_4):
+                            if(abs(ur5.box.models[n].pose.position.y-0)<=1e-2):
+                                ur5.handle_conveyor(0)
+                                flag_2=False
+                                if(int_key==0):
+                                    flag_1=True
+                                flag_4=False
+                            elif (int_key==0 and flag_2):
+                                ur5.handle_conveyor(40)
+                            else:
+                                ur5.handle_conveyor(15)
+
                         if(flag_1 and flag_3):
                             r=rospy.Rate(10)
                             print("slowed down")
