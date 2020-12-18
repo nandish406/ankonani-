@@ -36,7 +36,7 @@ class Conveyor:
         self._group = moveit_commander.MoveGroupCommander(self._planning_group)
         self._display_trajectory_publisher = rospy.Publisher(
             '/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory, queue_size=1)
-        rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=10)
+        rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=1)
         self._exectute_trajectory_client = actionlib.SimpleActionClient(
             'execute_trajectory', moveit_msgs.msg.ExecuteTrajectoryAction)
         self._exectute_trajectory_client.wait_for_server()
@@ -100,7 +100,6 @@ class Conveyor:
         rospy.loginfo(
             '\033[94m' + "Object of class Conveyor Deleted." + '\033[0m')
 
-
 def main():
 
     ur5 = Conveyor()
@@ -108,7 +107,7 @@ def main():
     flag_1=False
     flag_2=True
     flag_3=True
-    r=rospy.Rate(350)
+    r=rospy.Rate(20)
 
     while not rospy.is_shutdown():
         if(len(ur5.box.models)>0):
