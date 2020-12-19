@@ -64,32 +64,6 @@ class Conveyor:
         except rospy.ServiceException as e:
             print("Service call failed: %s"%e)
 
-    def func_tf_print(self, arg_frame_1, arg_frame_2):
-        try:
-            trans = self._tfBuffer.lookup_transform(arg_frame_1, arg_frame_2, rospy.Time())
-
-            rospy.loginfo(  "\n" +
-                            "Translation: \n" +
-                            "x: {} \n".format(trans.transform.translation.x) +
-                            "y: {} \n".format(trans.transform.translation.y) +
-                            "z: {} \n".format(trans.transform.translation.z) +
-                            "\n" +
-                            "Orientation: \n" +
-                            "x: {} \n".format(trans.transform.rotation.x) +
-                            "y: {} \n".format(trans.transform.rotation.y) +
-                            "z: {} \n".format(trans.transform.rotation.z) +
-                            "w: {} \n".format(trans.transform.rotation.w) )
-            self.ur5_pose_1.position.x=trans.transform.translation.x
-            self.ur5_pose_1.position.y=trans.transform.translation.y
-            self.ur5_pose_1.position.z=trans.transform.translation.z
-            self.ur5_pose_1.orientation.x =trans.transform.rotation.x
-            self.ur5_pose_1.orientation.y =trans.transform.rotation.y
-            self.ur5_pose_1.orientation.z =trans.transform.rotation.z
-            self.ur5_pose_1.orientation.w =trans.transform.rotation.w
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            rospy.logerr("TF error")
-            rospy.signal_shutdown("TF error")
-
     def camera(self,data):
         self.box=data
 
@@ -104,33 +78,23 @@ def main():
 
     ur5 = Conveyor()
     ur5.handle_conveyor(99)
-    flag_1=False
-    flag_2=True
-    flag_3=True
-    r=rospy.Rate(75)
+    flag=True
+
 
     while not rospy.is_shutdown():
         if (len(ur5.box.models)>0):
-            flag_4=True
             for mod in ur5.box.models:
                 try:
                     if(mod.type[0]=='p'):
                         key=mod.type[-1]
                         int_key=ord(key)-ord('0')-1
-                        if(abs(mod.pose.position.y)<=1e-2):
+                        if(abs(mod.pose.position.y)<=2e-2):
                             ur5.handle_conveyor(0)
-                            flag_2=False
-                            if(int_key==0):
-                                flag_1=True
-                        elif (int_key==0 and flag_2):
+                            flag=False
+                        elif (int_key==0 and flag):
                             ur5.handle_conveyor(40)
                         else:
                             ur5.handle_conveyor(15)
-                        if(flag_1 and flag_3):
-                            r=rospy.Rate(10)
-                            print("slowed down")
-                            flag_1=False
-                            flag_3=False
                 except:
                     print("Index error")
 

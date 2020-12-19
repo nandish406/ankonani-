@@ -212,35 +212,12 @@ def main():
     ur5 = CartesianPath()
     ur5.go_to_pose(ur5.home_pose)
     ur5.func_tf_print('world','logical_camera_2_frame')
-    ref=ur5.ur5_pose_1.position.x
+    refx=ur5.ur5_pose_1.position.x
+    refy=ur5.ur5_pose_1.position.y
 
     goal_pose= geometry_msgs.msg.Pose()
     bin_pose=[geometry_msgs.msg.Pose() for i in range(3)]
     #Destination Bin poses 
-
-    bin_pose[0].position.x=0.0280518015705
-    bin_pose[0].position.y=0.553104827039
-    bin_pose[0].position.z=1.11405642079
-    bin_pose[0].orientation.x=-1.08034359204e-05
-    bin_pose[0].orientation.y=-0.811637216272
-    bin_pose[0].orientation.z=0.584161730391
-    bin_pose[0].orientation.w=0.000319050479666
-
-    bin_pose[2].position.x=0.0388507599852
-    bin_pose[2].position.y=-0.578291991027
-    bin_pose[2].position.z= 1.16781935701
-    bin_pose[2].orientation.x=-0.00632122158936
-    bin_pose[2].orientation.y=0.621946567178
-    bin_pose[2].orientation.z= -0.77631458142
-    bin_pose[2].orientation.w=0.102362983581
-
-    bin_pose[1].position.x=0.817188461183
-    bin_pose[1].position.y=0.109556760312
-    bin_pose[1].position.z=0.944458336299
-    bin_pose[1].orientation.x=0.000241460168283
-    bin_pose[1].orientation.y=-0.999999969712
-    bin_pose[1].orientation.z=1.20678298204e-08
-    bin_pose[1].orientation.w=4.76741946812e-05
 
     joint_angle=[[],[],[]]
     joint_angle[0]=[1.517,0,0,0,0,0]
@@ -252,13 +229,14 @@ def main():
             for mod in ur5.box.models:
                 try:
                     if(mod.type[0]=='p'):
-                        if(abs(mod.pose.position.y)<=1e-2):
+                        if(abs(mod.pose.position.y)<=1.5e-2):
                             key_frame='logical_camera_2_'+mod.type+'_frame'
                             ur5.func_tf_print('world',key_frame)
-                            goal_pose.position.x=ur5.ur5_pose_1.position.x-ref
+                            goal_pose.position.x=ur5.ur5_pose_1.position.x-refx
+                            goal_pose.position.y=ur5.ur5_pose_1.position.y-refy
                             print(mod.pose)
                             print(goal_pose)
-                            ur5.ee_cartesian_translation(goal_pose.position.x,0,0)
+                            ur5.ee_cartesian_translation(goal_pose.position.x,goal_pose.position.y,0)
                             ur5.handle_vg(True)
                             ur5.ee_cartesian_translation(0.1,0,(ur5.box_length+0.2))
                             key=mod.type[-1]
