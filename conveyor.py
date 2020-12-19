@@ -36,7 +36,7 @@ class Conveyor:
         self._group = moveit_commander.MoveGroupCommander(self._planning_group)
         self._display_trajectory_publisher = rospy.Publisher(
             '/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory, queue_size=1)
-        rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=1)
+        rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=10)
         self._exectute_trajectory_client = actionlib.SimpleActionClient(
             'execute_trajectory', moveit_msgs.msg.ExecuteTrajectoryAction)
         self._exectute_trajectory_client.wait_for_server()
@@ -107,19 +107,17 @@ def main():
     flag_1=False
     flag_2=True
     flag_3=True
-    r=rospy.Rate(20)
+    r=rospy.Rate(75)
 
     while not rospy.is_shutdown():
-        if(len(ur5.box.models)>0):
-            length=len(ur5.box.models)
+        if(ur5.box.models):
             flag_4=True
-            for n in range (0,length):
+            for mod in ur5.box.models:
                 try:
-                    if(ur5.box.models[n].type[0]=='p'):
-                        key=ur5.box.models[n].type[-1]
+                    if(mod[n].type[0]=='p'):
+                        key=mod[n].type[-1]
                         int_key=ord(key)-ord('0')-1
-
-                        if(abs(ur5.box.models[n].pose.position.y-0)<=1e-2):
+                        if(abs(mod[n].pose.position.y)<=1e-2):
                             ur5.handle_conveyor(0)
                             flag_2=False
                             if(int_key==0):
@@ -128,7 +126,6 @@ def main():
                             ur5.handle_conveyor(40)
                         else:
                             ur5.handle_conveyor(15)
-
                         if(flag_1 and flag_3):
                             r=rospy.Rate(10)
                             print("slowed down")
