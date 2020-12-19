@@ -249,19 +249,19 @@ def main():
 
     while not rospy.is_shutdown():
         if(ur5.box.models):
-            for mod in range ur5.box.models:
+            for mod in ur5.box.models:
                 try:
-                    if(mod[n].type[0]=='p'):
-                        if(abs(mod[n].pose.position.y)<=1e-2):
-                            key_frame='logical_camera_2_'+mod[n].type+'_frame'
+                    if(mod.type[0]=='p'):
+                        if(abs(mod.pose.position.y)<=1e-2):
+                            key_frame='logical_camera_2_'+mod.type+'_frame'
                             ur5.func_tf_print('world',key_frame)
                             goal_pose.position.x=ur5.ur5_pose_1.position.x-ref
-                            print(mod[n].pose)
+                            print(mod.pose)
                             print(goal_pose)
                             ur5.ee_cartesian_translation(goal_pose.position.x,0,0)
                             ur5.handle_vg(True)
-                            ur5.ee_cartesian_translation(0,0,(ur5.box_length+0.2))
-                            key=mod[n].type[-1]
+                            ur5.ee_cartesian_translation(0.1,0,(ur5.box_length+0.2))
+                            key=mod.type[-1]
                             int_key=ord(key)-ord('0')-1
                             ur5.joint_angle_transition(joint_angle[int_key])
                             ur5.handle_vg(False)

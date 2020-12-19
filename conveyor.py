@@ -110,14 +110,14 @@ def main():
     r=rospy.Rate(75)
 
     while not rospy.is_shutdown():
-        if(ur5.box.models):
+        if (len(ur5.box.models)>0):
             flag_4=True
             for mod in ur5.box.models:
                 try:
-                    if(mod[n].type[0]=='p'):
-                        key=mod[n].type[-1]
+                    if(mod.type[0]=='p'):
+                        key=mod.type[-1]
                         int_key=ord(key)-ord('0')-1
-                        if(abs(mod[n].pose.position.y)<=1e-2):
+                        if(abs(mod.pose.position.y)<=1e-2):
                             ur5.handle_conveyor(0)
                             flag_2=False
                             if(int_key==0):
