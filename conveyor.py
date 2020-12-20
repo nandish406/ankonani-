@@ -82,6 +82,7 @@ def main():
 
 
     while not rospy.is_shutdown():
+        flag_2=True
         if (len(ur5.box.models)>0):
             for mod in ur5.box.models:
                 try:
