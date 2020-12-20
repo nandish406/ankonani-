@@ -9,6 +9,7 @@ import geometry_msgs.msg
 import actionlib
 import tf2_ros
 import tf2_msgs.msg
+from pkg_t2_examples.msg import start
 
 from pkg_vb_sim.msg import LogicalCameraImage
 from pkg_vb_sim.msg import Model
@@ -19,7 +20,7 @@ class CartesianPath:
     # Constructor
     def __init__(self):
 
-        rospy.init_node('node_eg5_waypoints', anonymous=True)
+        rospy.init_node('node_move', anonymous=True)
 
         self._planning_group = "ur5_1_planning_group"
         self._commander = moveit_commander.roscpp_initialize(sys.argv)
@@ -31,6 +32,7 @@ class CartesianPath:
         rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=10)
         self._exectute_trajectory_client = actionlib.SimpleActionClient(
             'execute_trajectory', moveit_msgs.msg.ExecuteTrajectoryAction)
+        self.conveyor_start_pub=rospy.Publisher('conveyor_start',start,queue_size=1)
         self._exectute_trajectory_client.wait_for_server()
         self._tfBuffer = tf2_ros.Buffer()
         self._listener = tf2_ros.TransformListener(self._tfBuffer)
@@ -210,7 +212,10 @@ class CartesianPath:
 def main():
 
     ur5 = CartesianPath()
+    message=start()
     ur5.go_to_pose(ur5.home_pose)
+    message.start=True
+    ur5.conveyor_start_pub.publish(message)
     ur5.func_tf_print('world','logical_camera_2_frame')
     refx=ur5.ur5_pose_1.position.x
     refy=ur5.ur5_pose_1.position.y

@@ -10,6 +10,8 @@ import actionlib
 import tf2_ros
 import tf2_msgs.msg
 
+from pkg_t2_examples.msg import start
+
 from pkg_vb_sim.srv import conveyorBeltPowerMsg
 from pkg_vb_sim.srv import conveyorBeltPowerMsgRequest
 from pkg_vb_sim.srv import conveyorBeltPowerMsgResponse
@@ -37,6 +39,7 @@ class Conveyor:
         self._display_trajectory_publisher = rospy.Publisher(
             '/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory, queue_size=1)
         rospy.Subscriber('/eyrc/vb/logical_camera_2',LogicalCameraImage,callback=self.camera,queue_size=10)
+        rospy.Subscriber('conveyor_start',start,callback=self.con_start,queue_size=1)
         self._exectute_trajectory_client = actionlib.SimpleActionClient(
             'execute_trajectory', moveit_msgs.msg.ExecuteTrajectoryAction)
         self._exectute_trajectory_client.wait_for_server()
@@ -53,6 +56,8 @@ class Conveyor:
         self.box_length = 0.15               # Length of the Package
         self.vacuum_gripper_width = 0.115    # Vacuum Gripper Width
         self.delta = self.vacuum_gripper_width + (self.box_length/2)  # 0.19
+        self.message=start()
+        self.message=False
         # Teams may use this info in Tasks
 
     def handle_conveyor(self,power):
@@ -67,6 +72,8 @@ class Conveyor:
     def camera(self,data):
         self.box=data
 
+    def con_start(self,data):
+        self.message=data
 
     # Destructor
     def __del__(self):
@@ -76,7 +83,9 @@ class Conveyor:
 
 def main():
 
-    ur5 = Conveyor()
+    ur5 = Conveyor() 
+    while(not ur5.message):
+        pass
     ur5.handle_conveyor(99)
     flag=True
 
