@@ -221,7 +221,6 @@ def main():
     refy=ur5.ur5_pose_1.position.y
 
     goal_pose= geometry_msgs.msg.Pose()
-    bin_pose=[geometry_msgs.msg.Pose() for i in range(3)]
     #Destination Bin poses 
 
     joint_angle=[[],[],[]]
