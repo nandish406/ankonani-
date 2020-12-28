@@ -211,6 +211,7 @@ class CartesianPath:
 
 def main():
 
+    rospy.sleep(7)
     ur5 = CartesianPath()
     message=start()
     ur5.go_to_pose(ur5.home_pose)
@@ -221,12 +222,11 @@ def main():
     refy=ur5.ur5_pose_1.position.y
 
     goal_pose= geometry_msgs.msg.Pose()
-    bin_pose=[geometry_msgs.msg.Pose() for i in range(3)]
     #Destination Bin poses 
 
     joint_angle=[[],[],[]]
     joint_angle[0]=[1.517,0,0,0,0,0]
-    joint_angle[1]=[3.142,0,0,0,0,0]
+    joint_angle[1]=[0,-1.24,-1.067,-0.3838,3.12,0]
     joint_angle[2]=[-1.517,0,0,0,0,0]
 
     while not rospy.is_shutdown():
@@ -241,11 +241,11 @@ def main():
                             goal_pose.position.y=ur5.ur5_pose_1.position.y-refy
                             print(mod.pose)
                             print(goal_pose)
-                            ur5.ee_cartesian_translation(goal_pose.position.x,goal_pose.position.y,0)
+                            ur5.ee_cartesian_translation(goal_pose.position.x,0,0)
                             ur5.handle_vg(True)
-                            ur5.ee_cartesian_translation(0.1,0,(ur5.box_length+0.2))
                             key=mod.type[-1]
                             int_key=ord(key)-ord('0')-1
+                            ur5.ee_cartesian_translation(0.1,0,(ur5.box_length+0.2))
                             ur5.joint_angle_transition(joint_angle[int_key])
                             ur5.handle_vg(False)
                             ur5.go_to_pose(ur5.home_pose)
